@@ -3,3 +3,4 @@ uvicorn
 sqlalchemy
 psycopg2
 python-dotenv
+pydantic==1.10.9
