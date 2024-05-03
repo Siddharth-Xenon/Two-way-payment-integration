@@ -55,6 +55,6 @@ async def delete_customer(customer_id: str, db: Session):
     if not customer:
         raise HTTPException(status_code=404, detail="Customer not found")
     return {
-        "message": f"Customer deleted successfully",
+        "message": "Customer deleted successfully",
         "customer": delete_customer_in_db(customer, db),
     }
