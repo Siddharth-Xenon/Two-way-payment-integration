@@ -10,3 +10,7 @@ class DatabaseConfig:
     DB_HOST: str = os.getenv("DB_HOST", "localhost")
     DB_NAME: str = os.getenv("DB_NAME", "payments")
     DB_PORT: str = os.getenv("DB_PORT", "5432")
+
+
+class StripeConfig:
+    STRIPE_API_KEY: str = os.getenv("STRIPE_API_KEY")
