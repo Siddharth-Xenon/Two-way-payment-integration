@@ -1,4 +1,7 @@
+import stripe
+import json
 from fastapi import HTTPException
+from confluent_kafka import Consumer, KafkaError
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from psycopg2.errors import UniqueViolation
@@ -103,6 +106,7 @@ def update_customer_in_db(customer: CustomerDB, db: Session) -> CustomerDB:
 
     return customer
 
+
 def delete_customer_in_db(customer: CustomerDB, db: Session):
     """
     Delete a customer from the database using SQLAlchemy session.
@@ -122,7 +126,44 @@ def delete_customer_in_db(customer: CustomerDB, db: Session):
         db.rollback()
         raise HTTPException(
             status_code=500,
-            detail=f"Failed to delete customer with ID {customer.id}: {str(e)}"
+            detail=f"Failed to delete customer with ID {customer.id}: {str(e)}",
         )
 
     return customer
+
+
+def update_stripe_customer():
+    # Consumer configuration
+    conf = {
+        "bootstrap.servers": "localhost:9092",
+        "group.id": "stripe-sync-group",
+        "auto.offset.reset": "earliest",
+    }
+
+    # Create Consumer instance
+    consumer = Consumer(**conf)
+    consumer.subscribe(["customer_updates"])
+
+    try:
+        while True:
+            msg = consumer.poll(1.0)
+
+            if msg is None:
+                continue
+            if msg.error():
+                if msg.error().code() == KafkaError._PARTITION_EOF:
+                    # End of partition event
+                    print(
+                        "End of partition reached {0}/{1}".format(
+                            msg.topic(), msg.partition()
+                        )
+                    )
+                else:
+                    print(msg.error())
+                continue
+
+            # Message processing
+            customer_data = json.loads(msg.value().decode("utf-8"))
+            stripe.Customer.modify(**customer_data)
+    finally:
+        consumer.close()

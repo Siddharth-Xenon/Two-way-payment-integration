@@ -1,6 +1,8 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
+# from app.kafka.producer import kafka_producer
 from app.models.customers import Customer
+from app.api.utils.stripe_utils import create_stripe_customer
 from app.api.utils.customer_utils import (
     save_customer_to_db,
     fetch_all_customers,
@@ -22,11 +24,18 @@ def get_db():
 
 async def create_customer(customer: Customer, db: Session):
     """
-    Process customer data and save to the database
+    Process customer data, save to the database, and send a Kafka message
     """
-    customer_dict = customer.dict()
-    return save_customer_to_db(customer_dict, db)
 
+    customer_dict = customer.dict()
+    result = save_customer_to_db(customer_dict, db)
+
+    # Send Kafka message
+    # producer = kafka_producer()
+    # await producer("customer_updates", f"New customer added: {customer_dict}")
+    await create_stripe_customer(customer_dict)
+
+    return result
 
 async def get_customers(db: Session) -> list[Customer]:
     """
