@@ -14,3 +14,4 @@ class DatabaseConfig:
 
 class StripeConfig:
     STRIPE_API_KEY: str = os.getenv("STRIPE_API_KEY")
+    STRIPE_WEBHOOK_SECRET: str = os.getenv("STRIPE_WEBHOOK_SECRET")

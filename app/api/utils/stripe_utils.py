@@ -1,7 +1,7 @@
 import stripe
 from fastapi import HTTPException
 from app.core.config import StripeConfig
-# from app.models.customers import CustomerDB
+from app.models.customers import Customer
 
 stripe.api_key = StripeConfig.STRIPE_API_KEY
 
@@ -73,3 +73,17 @@ def delete_stripe_customer(stripe_customer_id: str):
         return stripe_customer
     except stripe.error.StripeError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+async def process_stripe_customer(stripe_customer_data: dict):
+    """
+    Process the Stripe customer data to match the customer base model in the database.
+
+    Args:
+    stripe_customer_data (dict): Raw data from Stripe API.
+
+    Returns:
+    dict: Processed data suitable for the customer base model.
+    """
+
+    return Customer(**stripe_customer_data).dict()
