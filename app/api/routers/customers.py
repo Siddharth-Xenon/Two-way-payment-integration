@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from app.models.customers import Customer
+from app.models.customers import Customer, CustomerInfo
 from app.api.controllers.customers import (
     create_customer as create_customer_controller,
     get_customers as get_customers_controller,
@@ -28,7 +28,7 @@ async def create_customer(customer: Customer, db: Session = Depends(get_db)):
 
 
 @router.get("/")
-async def get_customers(db: Session = Depends(get_db)) -> list[Customer]:
+async def get_customers(db: Session = Depends(get_db)) -> list[CustomerInfo]:
     return await get_customers_controller(db=db)
 
 

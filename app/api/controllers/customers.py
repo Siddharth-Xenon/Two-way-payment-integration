@@ -1,8 +1,7 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
-# from app.kafka.producer import kafka_producer
-from app.models.customers import Customer
-from app.api.utils.stripe_utils import create_stripe_customer
+from app.kafka.producer import OutgoingProducer
+from app.models.customers import Customer, CustomerInfo
 from app.api.utils.customer_utils import (
     save_customer_to_db,
     fetch_all_customers,
@@ -29,15 +28,13 @@ async def create_customer(customer: Customer, db: Session):
 
     customer_dict = customer.dict()
     result = save_customer_to_db(customer_dict, db)
-
-    # Send Kafka message
-    # producer = kafka_producer()
-    # await producer("customer_updates", f"New customer added: {customer_dict}")
-    await create_stripe_customer(customer_dict)
+    if result:
+        OutgoingProducer().write_to_topic("create", result)
 
     return result
 
-async def get_customers(db: Session) -> list[Customer]:
+
+async def get_customers(db: Session) -> list[CustomerInfo]:
     """
     Fetch all customers from the database
     """
@@ -53,7 +50,10 @@ async def update_customer(customer_id: str, update_data: dict, db: Session):
         raise HTTPException(status_code=404, detail="Customer not found")
     for key, value in update_data.items():
         setattr(customer, key, value)
-    return update_customer_in_db(customer, db)
+    result = update_customer_in_db(customer, db)
+    if result:
+        OutgoingProducer().write_to_topic("update", result)
+    return result
 
 
 async def delete_customer(customer_id: str, db: Session):
@@ -63,6 +63,7 @@ async def delete_customer(customer_id: str, db: Session):
     customer = fetch_customer_by_id(customer_id, db)
     if not customer:
         raise HTTPException(status_code=404, detail="Customer not found")
+    OutgoingProducer().write_to_topic("delete", customer)
     return {
         "message": "Customer deleted successfully",
         "customer": delete_customer_in_db(customer, db),

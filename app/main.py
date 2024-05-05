@@ -1,9 +1,12 @@
 import uvicorn
 from fastapi import FastAPI
+import threading
 
 from app.api.api import api_router
 from app.db.db import engine
 from app.models import customers
+from app.kafka.producer import OutgoingProducer
+from app.kafka.consumer import OutgoingConsumer
 
 
 app = FastAPI(title="Zenskar", description="Two-Way Integrations")
@@ -22,6 +25,9 @@ app.include_router(api_router)
 @app.on_event("startup")
 async def startup_event():
     create_tables()
+    # Start Kafka background worker in a separate thread
+    kafka_thread = threading.Thread(target=OutgoingConsumer().sync)
+    kafka_thread.start()
 
 
 @app.get("/")

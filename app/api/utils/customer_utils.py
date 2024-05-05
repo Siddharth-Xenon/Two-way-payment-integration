@@ -5,7 +5,7 @@ from confluent_kafka import Consumer, KafkaError
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
 from psycopg2.errors import UniqueViolation
-from app.models.customers import CustomerDB
+from app.models.customers import CustomerDB, CustomerInfo
 from app.db.db import SessionLocal
 
 
@@ -44,7 +44,7 @@ def save_customer_to_db(customer_data: dict, db: Session) -> CustomerDB:
     return new_customer
 
 
-def fetch_all_customers(db: Session) -> list[CustomerDB]:
+def fetch_all_customers(db: Session) -> list[CustomerInfo]:
     """
     Fetch all customers from the database using SQLAlchemy session.
 
@@ -52,7 +52,7 @@ def fetch_all_customers(db: Session) -> list[CustomerDB]:
     db (Session): SQLAlchemy session object to handle transactions.
 
     Returns:
-    list[CustomerDB]: List of all customer database objects.
+    list[CustomerInfo]: List of all customer database objects.
     """
 
     return db.query(CustomerDB).all()
@@ -73,7 +73,7 @@ def fetch_customer_by_id(customer_id: str, db: Session) -> CustomerDB:
     return db.query(CustomerDB).filter(CustomerDB.id == customer_id).first()
 
 
-def update_customer_in_db(customer: CustomerDB, db: Session) -> CustomerDB:
+def update_customer_in_db(customer: dict, db: Session) -> dict:
     """
     Update a customer in the database using SQLAlchemy session.
 

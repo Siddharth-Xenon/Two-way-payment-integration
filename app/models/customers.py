@@ -12,6 +12,10 @@ class Customer(BaseModel):
         orm_mode = True
 
 
+class CustomerInfo(Customer):
+    id: str
+
+
 class CustomerDB(Base):
     __tablename__ = "customers"
 
