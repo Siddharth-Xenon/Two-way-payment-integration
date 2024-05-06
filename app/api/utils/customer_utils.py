@@ -118,17 +118,24 @@ def update_customer_in_db(customer: dict, db: Session) -> dict:
     }
 
 
-def delete_customer_in_db(customer: CustomerDB, db: Session):
+def delete_customer_in_db(customer_id: str, db: Session):
     """
     Delete a customer from the database using SQLAlchemy session.
 
     Args:
     db (Session): SQLAlchemy session object to handle transactions.
-    customer (CustomerDB): The customer database object to delete.
+    customer_id (str): The ID of the customer database object to delete.
 
     Returns:
-    CustomerDB: The deleted customer database object.
+    dict: Dictionary containing the ID, name, and email of the deleted customer.
     """
+
+    customer = db.query(CustomerDB).filter(CustomerDB.id == customer_id).first()
+    if not customer:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Customer with ID {customer_id} not found."
+        )
 
     try:
         db.delete(customer)
@@ -137,7 +144,7 @@ def delete_customer_in_db(customer: CustomerDB, db: Session):
         db.rollback()
         raise HTTPException(
             status_code=500,
-            detail=f"Failed to delete customer with ID {customer.id}: {str(e)}",
+            detail=f"Failed to delete customer with ID {customer_id}: {str(e)}",
         )
 
     return {

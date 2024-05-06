@@ -66,5 +66,5 @@ async def delete_customer(customer_id: str, db: Session):
     OutgoingProducer().write_to_topic("stripe_outgoing", "delete", customer)
     return {
         "message": "Customer deleted successfully",
-        "customer": delete_customer_in_db(customer, db),
+        "customer": delete_customer_in_db(customer_id, db),
     }

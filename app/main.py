@@ -23,7 +23,7 @@ app.include_router(api_router)
 
 @app.on_event("startup")
 async def startup_event():
-    # create_tables()
+    create_tables()
     # Start Kafka background worker in a separate thread
     kafka_thread1 = threading.Thread(target=OutgoingConsumer().sync)
     kafka_thread1.start()
