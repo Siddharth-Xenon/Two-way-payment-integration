@@ -30,9 +30,7 @@ Before you begin, ensure you have met the following requirements:
 
 ```bash
 
-git clone https://github.com/your-repository-url.git
-
-cd your-project-directory
+git clone https://github.com/Siddharth-Xenon/Two-way-payment-integration.git
 
 ```
 
