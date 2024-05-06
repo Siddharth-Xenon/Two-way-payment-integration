@@ -121,11 +121,11 @@ To expose your local Stripe server to the internet, use ngrok to create a public
 
   
 
-2. Run ngrok to expose port 5000 (or the port your local server is running on):
+2. Run ngrok to expose port 8000 (or the port your local server is running on):
 
 ```bash
 
-ngrok http 5000
+ngrok http http://localhost:8000
 
 ```
 
