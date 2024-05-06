@@ -5,8 +5,7 @@ import threading
 from app.api.api import api_router
 from app.db.db import engine
 from app.models import customers
-from app.kafka.producer import OutgoingProducer
-from app.kafka.consumer import OutgoingConsumer
+from app.kafka.consumer import OutgoingConsumer, IncomingConsumer
 
 
 app = FastAPI(title="Zenskar", description="Two-Way Integrations")
@@ -24,10 +23,12 @@ app.include_router(api_router)
 
 @app.on_event("startup")
 async def startup_event():
-    create_tables()
+    # create_tables()
     # Start Kafka background worker in a separate thread
-    kafka_thread = threading.Thread(target=OutgoingConsumer().sync)
-    kafka_thread.start()
+    kafka_thread1 = threading.Thread(target=OutgoingConsumer().sync)
+    kafka_thread1.start()
+    kafka_thread2 = threading.Thread(target=IncomingConsumer().sync)
+    kafka_thread2.start()
 
 
 @app.get("/")

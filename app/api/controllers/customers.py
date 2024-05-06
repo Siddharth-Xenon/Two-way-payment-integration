@@ -29,7 +29,7 @@ async def create_customer(customer: Customer, db: Session):
     customer_dict = customer.dict()
     result = save_customer_to_db(customer_dict, db)
     if result:
-        OutgoingProducer().write_to_topic("create", result)
+        OutgoingProducer().write_to_topic("stripe_outgoing", "create", result)
 
     return result
 
@@ -52,7 +52,7 @@ async def update_customer(customer_id: str, update_data: dict, db: Session):
         setattr(customer, key, value)
     result = update_customer_in_db(customer, db)
     if result:
-        OutgoingProducer().write_to_topic("update", result)
+        OutgoingProducer().write_to_topic("stripe_outgoing", "update", result)
     return result
 
 
@@ -63,7 +63,7 @@ async def delete_customer(customer_id: str, db: Session):
     customer = fetch_customer_by_id(customer_id, db)
     if not customer:
         raise HTTPException(status_code=404, detail="Customer not found")
-    OutgoingProducer().write_to_topic("delete", customer)
+    OutgoingProducer().write_to_topic("stripe_outgoing", "delete", customer)
     return {
         "message": "Customer deleted successfully",
         "customer": delete_customer_in_db(customer, db),

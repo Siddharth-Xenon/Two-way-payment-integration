@@ -1,7 +1,7 @@
 import stripe
 from fastapi import HTTPException
 from app.core.config import StripeConfig
-from app.models.customers import Customer
+from app.models.customers import Customer, CustomerInfo
 
 stripe.api_key = StripeConfig.STRIPE_API_KEY
 
@@ -86,4 +86,4 @@ async def process_stripe_customer(stripe_customer_data: dict):
     dict: Processed data suitable for the customer base model.
     """
 
-    return Customer(**stripe_customer_data).dict()
+    return CustomerInfo(**stripe_customer_data).dict()

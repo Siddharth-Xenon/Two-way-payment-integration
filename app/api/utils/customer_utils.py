@@ -18,7 +18,7 @@ def get_db():
         db.close()
 
 
-def save_customer_to_db(customer_data: dict, db: Session) -> CustomerDB:
+def save_customer_to_db(customer_data: dict, db: Session) -> dict:
     """
     Save a new customer to the database using SQLAlchemy session.
 
@@ -27,7 +27,7 @@ def save_customer_to_db(customer_data: dict, db: Session) -> CustomerDB:
     customer_data (dict): Dictionary containing customer data.
 
     Returns:
-    CustomerDB: The newly created customer database object.
+    dict: Dictionary representation of the newly created customer database object.
     """
 
     try:
@@ -41,7 +41,11 @@ def save_customer_to_db(customer_data: dict, db: Session) -> CustomerDB:
             status_code=500, detail=f"Failed to save customer: {str(e)}"
         )
 
-    return new_customer
+    return {
+        "id": new_customer.id,
+        "name": new_customer.name,
+        "email": new_customer.email,
+    }
 
 
 def fetch_all_customers(db: Session) -> list[CustomerInfo]:
@@ -58,19 +62,22 @@ def fetch_all_customers(db: Session) -> list[CustomerInfo]:
     return db.query(CustomerDB).all()
 
 
-def fetch_customer_by_id(customer_id: str, db: Session) -> CustomerDB:
+def fetch_customer_by_id(customer_id: str, db: Session) -> dict:
     """
-    Fetch a customer by ID from the database using SQLAlchemy session.
+    Fetch a customer by ID from the database using SQLAlchemy session and return as a dictionary.
 
     Args:
     db (Session): SQLAlchemy session object to handle transactions.
     customer_id (str): ID of the customer to fetch.
 
     Returns:
-    CustomerDB: The customer database object.
+    dict: Dictionary representation of the customer database object.
     """
 
-    return db.query(CustomerDB).filter(CustomerDB.id == customer_id).first()
+    customer = db.query(CustomerDB).filter(CustomerDB.id == customer_id).first()
+    if customer:
+        return {"id": customer.id, "name": customer.name, "email": customer.email}
+    return {}
 
 
 def update_customer_in_db(customer: dict, db: Session) -> dict:
@@ -104,7 +111,11 @@ def update_customer_in_db(customer: dict, db: Session) -> dict:
             detail=f"Failed to update customer with ID {customer.id}: {str(e)}",
         )
 
-    return customer
+    return {
+        "id": customer.id,
+        "name": customer.name,
+        "email": customer.email,
+    }
 
 
 def delete_customer_in_db(customer: CustomerDB, db: Session):
@@ -129,7 +140,11 @@ def delete_customer_in_db(customer: CustomerDB, db: Session):
             detail=f"Failed to delete customer with ID {customer.id}: {str(e)}",
         )
 
-    return customer
+    return {
+        "id": customer.id,
+        "name": customer.name,
+        "email": customer.email,
+    }
 
 
 def update_stripe_customer():

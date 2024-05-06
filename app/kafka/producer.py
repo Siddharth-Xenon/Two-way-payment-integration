@@ -9,7 +9,7 @@ class OutgoingProducer:
             "bootstrap.servers": "localhost:9092",
             "acks": "all",  # Ensure producer receives acknowledgement from all brokers
         }
-        self.topic = "stripe_outgoing"
+        self.topic = None
         # Create Producer instance
         self.producer = Producer(**self.conf)
 
@@ -22,15 +22,16 @@ class OutgoingProducer:
             )
 
     # Function to send messages
-    def write_to_topic(self, method, customer):
+    def write_to_topic(self, topic, method, customer: dict):
         data = {
             "method": method,
             "Customer": {
-                "id": customer.id,
-                "name": customer.name,
-                "email": customer.email,
+                "id": customer["id"],
+                "name": customer["name"],
+                "email": customer["email"],
             },
         }
+        self.topic = topic
         try:
             # Serialize data to JSON format and encode to utf-8
             serialized_data = json.dumps(data).encode("utf-8")
