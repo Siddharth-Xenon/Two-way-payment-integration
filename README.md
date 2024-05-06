@@ -34,7 +34,13 @@ git clone https://github.com/Siddharth-Xenon/Two-way-payment-integration.git
 
 ```
 
-  
+For setting up the project, use the provided scripts based on your operating system:
+
+- **Windows**: Use `start.ps1` with PowerShell.
+- **macOS/Linux**: Use `start.sh` in your terminal.
+
+If you encounter any issues with the scripts, proceed with the manual step-by-step setup as detailed below.
+
 
 2. Install the required Python packages:
 
