@@ -81,13 +81,15 @@ Fill in the `DB_USERNAME`, `DB_PASSWORD`, `DB_HOST`, `STRIPE_API_KEY`, and `STRI
 
 2. Create a database named `payments` or as specified in your `.env` file.
 
-3. Run the database migrations:
+<!--- 3. Run the database migrations:
 
 ```bash
 
 alembic upgrade head
 
 ```
+-->
+
 
   
 
