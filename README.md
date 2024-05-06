@@ -52,10 +52,6 @@ pip install -r requirements.txt
 
 - Fill in the `.env` file with your database credentials and Stripe API keys.
 
-  
-
-4. Create a `.env` file in the root directory of your project:
-
 ```bash
 
 DB_USERNAME=
