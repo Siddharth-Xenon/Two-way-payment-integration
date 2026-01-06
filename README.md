@@ -1,191 +1,105 @@
+# Real-Time Two-Way Payment Synchronization Engine
 
+A robust, event-driven synchronization service designed to maintain real-time data consistency between an internal customer database and Stripe. Built with **FastAPI**, **Apache Kafka**, and **PostgreSQL**.
 
-# Two Way Strip Payment System Sync Project
+## 🚀 Overview
 
-  
+This engine solves the problem of keeping distributed systems in sync. It implements a bi-directional data flow:
+1.  **Outward Sync**: Changes in the local application are published to a Kafka queue and asynchronously propagated to Stripe.
+2.  **Inward Sync**: Events from Stripe (via Webhooks) are captured, queued, and processed to update the local database.
 
-This project is designed to synchronize CRM systems like Stripe, etc. Using FastAPI, SQLAlchemy, and Kafka with a PostgreSQL database.
+This architecture ensures **eventual consistency**, **fault tolerance**, and **scalability**, decoupling the user-facing API from external third-party latency.
 
-  
+## 🛠️ Tech Stack
 
-## Prerequisites
+*   **Backend**: Python 3.10+, FastAPI
+*   **Database**: PostgreSQL, SQLAlchemy ORM
+*   **Message Queue**: Apache Kafka (Confluent)
+*   **Infrastructure**: Docker, Docker Compose
+*   **External Integration**: Stripe API & Webhooks
 
-  
+## 🏗️ Architecture
 
-Before you begin, ensure you have met the following requirements:
+The system utilizes a **Producer-Consumer** pattern to handle data synchronization.
 
-- Python 3.10.x
+```mermaid
+graph LR
+    subgraph "Local System"
+        API[FastAPI API]
+        DB[(PostgreSQL)]
+        KP[Kafka Producer]
+        KC[Kafka Consumer]
+    end
+    
+    subgraph "External"
+        Stripe[Stripe Platform]
+    end
 
-- PostgreSQL
-
-- Docker (for containerization)
-
-  
-
-## Installation
-
-  
-
-1. Clone the repository:
-
-```bash
-
-git clone https://github.com/Siddharth-Xenon/Two-way-payment-integration.git
-
+    API -->|Write| DB
+    API -->|Event| KP
+    KP -->|Topic: stripe_outgoing| KC
+    KC -->|Sync| Stripe
+    
+    Stripe -->|Webhook| API
+    API -->|Event| KP
+    KP -->|Topic: stripe_incoming| KC
+    KC -->|Update| DB
 ```
 
-For setting up the project, use the provided scripts based on your operating system:
-
-- **Windows**: Use `start.ps1` with PowerShell.
-- **macOS/Linux**: Use `start.sh` in your terminal.
-
-If you encounter any issues with the scripts, proceed with the manual step-by-step setup as detailed below.
-
-
-2. Install the required Python packages:
-
-```bash
-
-pip install -r requirements.txt
-
-```
-
-  
-
-3. Set up your environment variables:
-
-- Create a `.env` file in the root directory of your project.
-
-- Fill in the `.env` file with your database credentials and Stripe API keys.
-
-```bash
-
-DB_USERNAME=
-
-DB_PASSWORD=
-
-DB_HOST=
-
-DB_NAME=payments
-
-DB_PORT=5432
-
-STRIPE_API_KEY=
-
-STRIPE_WEBHOOK_SECRET=
-```
-
-Fill in the `DB_USERNAME`, `DB_PASSWORD`, `DB_HOST`, `STRIPE_API_KEY`, and `STRIPE_WEBHOOK_SECRET` with your credentials.
-
-  
-
-## Database Setup
-
-  
-
-1. Ensure PostgreSQL is running on your system.
-
-2. Create a database named `payments` or as specified in your `.env` file.
-
-<!--- 3. Run the database migrations:
-
-```bash
-
-alembic upgrade head
-
-```
--->
-
-
-  
-
-## Docker(Kafka) Setup
-
-  
-
-1. Start the Docker containers for the services:
-
-```bash
-
-docker-compose up -d
-
-```
-
-  
-
-This command will start all the services defined in the `docker-compose.yml` file, including Kafka and Zookeeper, in detached mode.
-
-  
-
-## Ngrok
-
-  
-
-To expose your local Stripe server to the internet, use ngrok to create a public domain. This will allow Stripe to send webhook events to your local server:
-
-  
-
-1. Download and install ngrok from [ngrok.com](https://ngrok.com/).
-
-  
-
-2. Run ngrok to expose port 8000 (or the port your local server is running on):
-
-```bash
-
-ngrok http http://localhost:8000
-
-```
-
-  
-
-This command will output a public domain (e.g., `https://<random-id>.ngrok.io`). Note this domain as `<domain>`.
-
-  
-
-3. Create a webhook endpoint on your server that listens to `<domain>/webhook`. Ensure your server at this endpoint can handle POST requests and process the webhook data sent by Stripe.
-
-  
-
-4. Configure the webhook in your Stripe dashboard:
-
-- Go to the [Stripe dashboard](https://dashboard.stripe.com/test/webhooks).
-
-- Click on `+ Add endpoint`.
-
-- Enter the URL `<domain>/webhook`.
-
-- Select the events to listen to: `customer.created`, `customer.updated`, `customer.deleted`.
-
-- Add the endpoint.
-
-  
-
-This setup will allow your local development environment to receive real-time notifications from Stripe about customer events.
-
-  
-  
-
-## Running the Application
-
-  
-
-1. Start the FastAPI server:
-
-```bash
-
-uvicorn app.main:app --reload
-
-```
-
-  
-
-This will start the server on `http://localhost:8000`. The `--reload` flag enables auto-reloading of the server when you make changes to the code.
-
-  
-
-2. Access the API documentation:
-
-- Navigate to `http://localhost:8000/docs` in your web browser to view the Swagger UI documentation.
-
-- Navigate to `http://localhost:8000/redoc` to view the Redoc documentation.
+## ⚡ Features
+
+*   **Asynchronous Processing**: Uses background workers to handle sync tasks without blocking the main API thread.
+*   **Fault Tolerance**: Kafka message persistence ensures that temporary network failures don't result in data loss; messages are retried until success.
+*   **Bi-Directional Sync**:
+    *   **Create/Update/Delete** locally → Reflects in Stripe.
+    *   **Create/Update/Delete** in Stripe Dashboard → Reflects locally.
+*   **Containerized**: Entire stack (App, DB, Zookeeper, Kafka) runs with a single `docker-compose` command.
+
+## 🏁 Getting Started
+
+### Prerequisites
+*   Docker & Docker Compose
+*   Python 3.10+ (for local development)
+*   Stripe Account (Test Mode)
+*   [Ngrok](https://ngrok.com/) (for local webhook testing)
+
+### 🔧 Installation & Setup
+
+1.  **Clone the repository**
+    ```bash
+    git clone https://github.com/Siddharth-Xenon/Two-way-payment-integration.git
+    cd Two-way-payment-integration
+    ```
+
+2.  **Configure Environment**
+    Create a `.env` file in the root directory:
+    ```ini
+    DB_USERNAME=postgres
+    DB_PASSWORD=password
+    DB_HOST=db
+    DB_NAME=payments
+    DB_PORT=5432
+    STRIPE_API_KEY=sk_test_...
+    STRIPE_WEBHOOK_SECRET=whsec_...
+    ```
+
+3.  **Start Services (Docker)**
+    ```bash
+    docker-compose up -d --build
+    ```
+    This spins up Zookeeper, Kafka, PostgreSQL, and the FastAPI application.
+
+4.  **Local Webhook Setup (Ngrok)**
+    To receive events from Stripe locally:
+    ```bash
+    ngrok http 8000
+    ```
+    *   Copy the https URL (e.g., `https://xyz.ngrok.io`).
+    *   Add endpoint in Stripe Dashboard: `https://xyz.ngrok.io/webhook`.
+    *   Select events: `customer.created`, `customer.updated`, `customer.deleted`.
+
+### 🏃‍♂️ usage
+
+*   **API Docs**: Visit `http://localhost:8000/docs` to interact with the API.
+*   **Create Customer**: POST `/customers/` - triggers sync to Stripe.
+*   **Stripe Update**: Change a customer in Stripe Dashboard - verification log appears in app console.
